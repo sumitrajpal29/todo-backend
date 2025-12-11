@@ -21,8 +21,14 @@ class MockDB {
     }
 
     async createTask(task) {
-        const newTask = { _id: Date.now().toString(), completed: false, ...task };
+        const newTask = {
+            _id: Date.now().toString(),
+            completed: false,
+            createdAt: new Date().toISOString(),
+            ...task
+        };
         this.tasks.push(newTask);
+        console.log('Task Created:', newTask);
         return newTask;
     }
 
