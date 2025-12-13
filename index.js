@@ -11,8 +11,10 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Mongoose connection removed for Mock DB usage
-// mongoose.connect(process.env.MONGO_URI) ...
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.log('MongoDB connection error:', err));
 
 // Routes
 const authRoutes = require('./routes/auth');

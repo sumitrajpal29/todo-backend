@@ -1,9 +1,9 @@
-const db = require('../utils/mockDb');
+const Task = require('../models/Task');
 
 // Get all tasks for logged in user
 exports.getTasks = async (req, res) => {
     try {
-        const tasks = await db.findTasks(req.userId); // userId injected by middleware
+        const tasks = await Task.find({ userId: req.userId });
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
@@ -20,7 +20,7 @@ exports.createTask = async (req, res) => {
             return res.status(400).json({ message: 'Title is required' });
         }
 
-        const newTask = await db.createTask({
+        const newTask = await Task.create({
             title,
             description,
             deadline,
@@ -40,7 +40,7 @@ exports.updateTask = async (req, res) => {
         const { id } = req.params;
         const updates = req.body;
 
-        const updatedTask = await db.updateTask(id, updates);
+        const updatedTask = await Task.findByIdAndUpdate(id, updates, { new: true });
 
         if (!updatedTask) {
             return res.status(404).json({ message: 'Task not found' });
@@ -57,9 +57,9 @@ exports.deleteTask = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const deleted = await db.deleteTask(id);
+        const deletedTask = await Task.findByIdAndDelete(id);
 
-        if (!deleted) {
+        if (!deletedTask) {
             return res.status(404).json({ message: 'Task not found' });
         }
 

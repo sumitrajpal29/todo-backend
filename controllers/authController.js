@@ -1,4 +1,4 @@
-const db = require('../utils/mockDb');
+const User = require('../models/User');
 
 // Register User
 exports.register = async (req, res) => {
@@ -11,13 +11,13 @@ exports.register = async (req, res) => {
         }
 
         // Check if user exists
-        const existingUser = await db.findUserByUsername(username);
+        const existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
         // Create user
-        const user = await db.createUser({ username, password });
+        const user = await User.create({ username, password });
 
         res.status(201).json({ message: 'User registered successfully', userId: user._id });
     } catch (error) {
@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        const user = await db.findUserByUsername(username);
+        const user = await User.findOne({ username });
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
