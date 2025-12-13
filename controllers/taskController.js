@@ -1,9 +1,14 @@
 const Task = require('../models/Task');
+const User = require('../models/User');
 
 // Get all tasks for logged in user
 exports.getTasks = async (req, res) => {
     try {
-        const tasks = await Task.find({ userId: req.userId });
+        // Find MongoDB User ID based on Firebase UID
+        const user = await User.findOne({ firebaseUid: req.user.uid });
+        if (!user) return res.status(404).json({ message: 'User not found in database' });
+
+        const tasks = await Task.find({ userId: user._id });
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
@@ -14,7 +19,10 @@ exports.getTasks = async (req, res) => {
 exports.createTask = async (req, res) => {
     try {
         const { title, description, deadline, priority } = req.body;
-        const userId = req.userId;
+
+        // Find MongoDB User ID based on Firebase UID
+        const user = await User.findOne({ firebaseUid: req.user.uid });
+        if (!user) return res.status(404).json({ message: 'User not found in database' });
 
         if (!title) {
             return res.status(400).json({ message: 'Title is required' });
@@ -25,7 +33,7 @@ exports.createTask = async (req, res) => {
             description,
             deadline,
             priority: priority || 'Low',
-            userId
+            userId: user._id
         });
 
         res.status(201).json(newTask);

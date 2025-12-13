@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+// Route to sync Firebase user with MongoDB
+router.post('/sync', authMiddleware, authController.syncUser);
 
 module.exports = router;

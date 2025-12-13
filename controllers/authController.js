@@ -1,47 +1,28 @@
 const User = require('../models/User');
 
-// Register User
-exports.register = async (req, res) => {
+// Sync User (Create or Update user in MongoDB after Firebase login)
+exports.syncUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { uid, email, name } = req.user; // Decoded token from middleware
 
-        // Simple validation
-        if (!username || !password) {
-            return res.status(400).json({ message: 'Please provide username and password' });
-        }
+        let user = await User.findOne({ firebaseUid: uid });
 
-        // Check if user exists
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        // Create user
-        const user = await User.create({ username, password });
-
-        res.status(201).json({ message: 'User registered successfully', userId: user._id });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-// Login User
-exports.login = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        const user = await User.findOne({ username });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            // Create new user
+            user = await User.create({
+                firebaseUid: uid,
+                email,
+                displayName: name
+            });
+        } else if (user.email !== email || user.displayName !== name) {
+            // Update existing user info if changed
+            // Only update if email is present (some providers might not return email)
+            if (email) user.email = email;
+            if (name) user.displayName = name;
+            await user.save();
         }
 
-        // In real app, compare hashed password
-        if (user.password !== password) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-
-        // In real app, generate JWT token here
-        res.json({ message: 'Login successful', userId: user._id });
+        res.json({ message: 'User synced', userId: user._id, user });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
