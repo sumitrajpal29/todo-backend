@@ -15,16 +15,9 @@ try {
         });
         console.log('Firebase Admin Initialized with serviceAccountKey.json');
     } else {
-        // Fallback to env vars (legacy) or just error out
-        console.warn('Warning: serviceAccountKey.json not found. Trying env vars...');
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
-            }),
-        });
-        console.log('Firebase Admin Initialized with ENV keys');
+        console.error('Error: serviceAccountKey.json not found!');
+        // Throwing error to fail fast if file is missing (since user expects file to exist)
+        throw new Error('serviceAccountKey.json is required but missing.');
     }
 } catch (error) {
     console.error('Firebase Admin Initialization Error:', error);
